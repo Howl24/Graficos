@@ -13,7 +13,7 @@ CSTD=-std=c++11
 default: $(TARGET)
 all: default
 
-OBJECTS = cube_texture.o shader_utils.o
+OBJECTS = cube_texture.o shader_utils.o image_DXT.o image_helper.o SOIL.o stb_image_aug.o
 HEADERS =
 
 %.o:	%.cpp	$(HEADERS)

@@ -11,32 +11,25 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "shader_utils.h"
-
+#include "SOIL.h"
 
 #include "res_texture.c"
-
 
 int screen_width=800, screen_height=600;
 GLuint vbo_cube_vertices;
 GLuint ibo_cube_elements;
 GLuint program;
 
-
 GLint attribute_coord3d;
 GLint uniform_mvp;
 
-
-
 GLuint vbo_cube_texcoords;
-
 GLint attribute_texcoord;
 
-
-
 GLuint texture_id;
-
 GLint uniform_texture;
 
+unsigned char* imag;
 
 int init_resources()
 {
@@ -73,42 +66,25 @@ int init_resources()
      1.0,  1.0,  1.0,
   };
 
-
   glGenBuffers(1, &vbo_cube_vertices);
   glBindBuffer(GL_ARRAY_BUFFER, vbo_cube_vertices);
   glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices), cube_vertices, GL_STATIC_DRAW);
 
-
   GLfloat cube_texcoords[48];
 
-
-
   cube_texcoords[0] = 0.0;  cube_texcoords[1] = 0.0;
-
   cube_texcoords[2] = 1.0;  cube_texcoords[3] = 0.0;
-
   cube_texcoords[4] = 1.0;  cube_texcoords[5] = 1.0;
-
   cube_texcoords[6] = 0.0;  cube_texcoords[7] = 1.0;
 
-
-
   for(int i = 8; i < 48; i++){
-
     cube_texcoords[i] = cube_texcoords[i%8];
-
   }
 
-
-
   glGenBuffers(1, &vbo_cube_texcoords);
-
   glBindBuffer(GL_ARRAY_BUFFER, vbo_cube_texcoords);
-
   glBufferData(GL_ARRAY_BUFFER, sizeof(cube_texcoords),
-
                cube_texcoords, GL_STATIC_DRAW);
-
 
     GLushort cube_elements[] = {
     // front
@@ -131,41 +107,27 @@ int init_resources()
     22, 23, 20,
   };
 
-
   glGenBuffers(1, &ibo_cube_elements);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cube_elements), cube_elements, GL_STATIC_DRAW);
 
-
   glGenTextures(1, &texture_id);
-
   glBindTexture(GL_TEXTURE_2D, texture_id);
-
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-
                   GL_LINEAR);
 
-
+  int width, height, channel;
+  imag = SOIL_load_image("pattern2.jpg", &width, &height, &channel, SOIL_LOAD_AUTO);
 
   glTexImage2D(GL_TEXTURE_2D,
-
                0,
-
                GL_RGB,
-
-               res_texture.width,
-
-               res_texture.height,
-
+               width,
+               height,
                0,
-
                GL_RGB,
-
                GL_UNSIGNED_BYTE,
-
-               res_texture.pixel_data);
-
-
+               imag);
 
 
   GLint link_ok = GL_FALSE;
@@ -193,13 +155,11 @@ int init_resources()
     return 0;
   }
 
-  attribute_texcoord = glGetAttribLocation(program, "texcoord");
-
+  attribute_texcoord = glGetAttribLocation(program,
+                                           "texcoord");
   if(attribute_texcoord == -1){
-
     fprintf(stderr, "Could not bind attribute texcoord\n");
     return 0;
-
   }
 
   const char* uniform_name;
@@ -210,16 +170,12 @@ int init_resources()
     return 0;
   }
 
-
   uniform_texture = glGetUniformLocation(program, "mytexture");
-
   if (uniform_texture == -1) {
-
 
     fprintf(stderr, "Could not bind uniform mytexture\n");
     return 0;
   }
-
 
   return 1;
 }
@@ -248,12 +204,8 @@ void onDisplay()
 
   glUseProgram(program);
 
-
-
   glActiveTexture(GL_TEXTURE0);
-
   glBindTexture(GL_TEXTURE_2D, texture_id);
-
   glUniform1i(uniform_texture, 0);
 
   glEnableVertexAttribArray(attribute_coord3d);
@@ -268,27 +220,16 @@ void onDisplay()
     0                  // offset of first element
   );
 
-
   glEnableVertexAttribArray(attribute_texcoord);
-
   glBindBuffer(GL_ARRAY_BUFFER, vbo_cube_texcoords);
 
-
-
   glVertexAttribPointer(
-
     attribute_texcoord,
-
     2,
-
     GL_FLOAT,
-
     GL_FALSE,
-
     0,0
-
     );
-
 
   /* Push each element in buffer_vertices to the vertex shader */
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_cube_elements);
@@ -296,7 +237,6 @@ void onDisplay()
   glDrawElements(GL_TRIANGLES, size/sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
 
   glDisableVertexAttribArray(attribute_coord3d);
-
   glDisableVertexAttribArray(attribute_texcoord);
   glutSwapBuffers();
 }
@@ -312,10 +252,9 @@ void free_resources()
   glDeleteProgram(program);
   glDeleteBuffers(1, &vbo_cube_vertices);
   glDeleteBuffers(1, &ibo_cube_elements);
-
   glDeleteBuffers(1, &vbo_cube_texcoords);
-
   glDeleteTextures(1, &texture_id);
+  SOIL_free_image_data(imag);
 }
 
 

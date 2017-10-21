@@ -1,8 +1,6 @@
-#version 450
-
-in vec3 coord3d;
-in vec2 texcoord;
-out vec2 f_texcoord;
+attribute vec3 coord3d;
+attribute vec2 texcoord;
+varying vec2 f_texcoord;
 
 uniform mat4 mvp;
 
