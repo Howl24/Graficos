@@ -1,4 +1,4 @@
-TARGET=aviones
+TARGET=lab4
 BASE_DIR=$(shell pwd)
 
 FREEGLUT_LIB_DIR=$(BASE_DIR)/freeglut/lib
@@ -13,7 +13,8 @@ CSTD=-std=c++11
 default: $(TARGET)
 all: default
 
-OBJECTS = aviones.o shader_utils.o
+OBJECTS = lab4.o shader_utils.o image_DXT.o image_helper.o SOIL.o stb_image_aug.o
+
 HEADERS =
 
 %.o:	%.cpp	$(HEADERS)
