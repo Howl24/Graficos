@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <vector>
-
-#include <iostream>
 #include <GL/glew.h>
 
 #include <GL/freeglut.h>
@@ -16,6 +13,10 @@
 #include "SOIL.h"
 
 #include "res_texture.c"
+
+#include <vector>
+#include <iostream>
+
 
 int screen_width=800, screen_height=600;
 GLuint vbo_cube_vertices;
@@ -77,26 +78,68 @@ Scene scene;
 
 //Funcion para lectura de archivo obj
 
+
+Vertex leerVertice(FILE* fid){
+  float x, y, z;
+  fscanf(fid, "%f %f %f", &x, &y, &z);
+ 
+  Vertex v;
+  v.x = x; v.y = y; v.z = z;
+  return v;
+}
+
 Mesh* leerOBJ(const char* filename){
+
   FILE* fid = fopen(filename, "rt");
+
+  std::vector<Vertex> vertices;
+  std::vector<Vertex> normales;
+  std::vector<Vertex> texturas;
 
   char line_type[10];
   while (fscanf(fid, "%s", &line_type)!=EOF){
     if (strcmp(line_type, "v")==0){
-      float x, y, z;
-      fscanf(fid, "%f %f %f", &x, &y, &z);
-      printf("%f\n", x);
+      vertices.push_back(leerVertice(fid));
     }
 
-    if (strcmp(line_type, "vn")==0){
-
+    if (strcmp(line_type, "vn") == 0){
+      normales.push_back(leerVertice(fid));
     }
 
+    if (strcmp(line_type, "vt") == 0){
+      // Solo se utilizan las dos primera coordenadas (u, v);
+      texturas.push_back(leerVertice(fid));
+    }
 
+    if (strcmp(line_type, "g") == 0 || strcmp(line_type, "s") == 0){
+      char foo[100];
+      fscanf(fid, "%s", &foo);
+    }
 
+    if (strcmp(line_type, "f") == 0){
+      int iv, it, in;
+      char foo;
+      while(fscanf(fid, "%d %d %d%c", &iv, &it, &in, &foo)){
+        if (foo == 13) break;
+      }
+    }
   }
 
   Mesh* mesh = new Mesh;
+  mesh->numVertices = vertices.size();
+
+  mesh->vertices = new Vertex[vertices.size()];
+  mesh->center.x = 0.0;
+  mesh->center.y = 0.0;
+  mesh->center.z = 0.0;
+
+  for (int i=0;i<vertices.size() ;i++){
+    mesh->vertices[i] = vertices[i];
+    mesh->center.x += mesh->vertices[i].x;
+    mesh->center.y += mesh->vertices[i].y;
+    mesh->center.z += mesh->vertices[i].z;
+    //printf("%f\n", mesh->vertices[i].x);
+  }
 
   return mesh;
 }
