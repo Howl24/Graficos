@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <vector>
 
+#include <iostream>
 #include <GL/glew.h>
 
 #include <GL/freeglut.h>
@@ -31,8 +33,78 @@ GLint uniform_texture;
 
 unsigned char* imag;
 
+
+// Tipos de datos para representar el objeto
+typedef struct Vertex{
+    float x, y, z;
+
+}Vertex;
+
+typedef struct Triangle{
+    unsigned int indices[3];
+}Triangle;
+
+typedef struct Mesh{
+    //Informacion de estructura
+    int numVertices;
+    int numTriangles;
+    Vertex* vertices;
+    Triangle* triangles;
+
+    //Información para transformación inicial
+    Vertex center;
+    float scale;
+
+    //Matriz de transformación
+    glm::mat4 model_transform;
+
+    //Buffers para graficado
+    GLfloat* object_vertices;
+    GLushort* object_indexes;
+
+    //Id's para buffers
+    GLuint vbo_object;
+    GLuint ibo_object;
+}Mesh;
+
+typedef struct Scene{
+    int numMeshes;
+    Mesh* meshes[0];
+}Scene;
+
+Scene scene;
+
+
+//Funcion para lectura de archivo obj
+
+Mesh* leerOBJ(const char* filename){
+  FILE* fid = fopen(filename, "rt");
+
+  char line_type[10];
+  while (fscanf(fid, "%s", &line_type)!=EOF){
+    if (strcmp(line_type, "v")==0){
+      float x, y, z;
+      fscanf(fid, "%f %f %f", &x, &y, &z);
+      printf("%f\n", x);
+    }
+
+    if (strcmp(line_type, "vn")==0){
+
+    }
+
+
+
+  }
+
+  Mesh* mesh = new Mesh;
+
+  return mesh;
+}
+
 int init_resources()
 {
+  scene.meshes[0] = leerOBJ("House_3_AO.obj");
+
   GLfloat cube_vertices[] = {
     // front
     -1.0, -1.0,  1.0,
