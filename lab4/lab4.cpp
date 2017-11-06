@@ -17,6 +17,7 @@
 #include <vector>
 #include <iostream>
 
+#include <typeinfo>
 
 int screen_width=800, screen_height=600;
 GLuint vbo_cube_vertices;
@@ -96,6 +97,7 @@ Mesh* leerOBJ(const char* filename){
   std::vector<Vertex> normales;
   std::vector<Vertex> texturas;
 
+  std::vector<Triangle> triangulos;
   char line_type[10];
   while (fscanf(fid, "%s", &line_type)!=EOF){
     if (strcmp(line_type, "v")==0){
@@ -118,17 +120,52 @@ Mesh* leerOBJ(const char* filename){
 
     if (strcmp(line_type, "f") == 0){
       int iv, it, in;
-      char foo;
-      while(fscanf(fid, "%d %d %d%c", &iv, &it, &in, &foo)){
-        if (foo == 13) break;
+      char last_char;
+      std::vector< std::vector<int> > side_indexes;
+      std::cout << "Foo\n";
+      while(fscanf(fid, "%d %d %d%c", &iv, &it, &in, &last_char)){
+        std::vector<int> indexes;
+        indexes.push_back(iv);
+        indexes.push_back(it);
+        indexes.push_back(in);
+
+        std::cout << "V: " << iv << it << in << std::endl;
+        side_indexes.push_back(indexes);
+        if (last_char == 13) break;
+      }
+
+      if (int(side_indexes.size()) == 3){
+        Triangle t;
+        t.indices[0] = side_indexes[0][0];
+        t.indices[1] = side_indexes[1][0];
+        t.indices[2] = side_indexes[2][0];
+
+        triangulos.push_back(t);
+      }
+
+      if (int(side_indexes.size()) == 4){
+        Triangle t1, t2;
+
+        t1.indices[0] = side_indexes[0][0];
+        t1.indices[1] = side_indexes[1][0];
+        t1.indices[2] = side_indexes[2][0];
+
+        t2.indices[0] = side_indexes[0][0];
+        t2.indices[1] = side_indexes[2][0];
+        t2.indices[2] = side_indexes[3][0];
+
+        triangulos.push_back(t1);
+        triangulos.push_back(t2);
       }
     }
   }
 
   Mesh* mesh = new Mesh;
   mesh->numVertices = vertices.size();
+  mesh->numTriangles = triangulos.size();
 
   mesh->vertices = new Vertex[vertices.size()];
+  mesh->triangles = new Triangle[triangulos.size()];
   mesh->center.x = 0.0;
   mesh->center.y = 0.0;
   mesh->center.z = 0.0;
@@ -140,6 +177,9 @@ Mesh* leerOBJ(const char* filename){
     mesh->center.z += mesh->vertices[i].z;
     //printf("%f\n", mesh->vertices[i].x);
   }
+
+
+
 
   return mesh;
 }
