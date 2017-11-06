@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <cstdlib>
 #include <vector>
@@ -29,8 +28,8 @@ GLint uniform_mat_s;
 GLint uniform_light0_position;
 GLint uniform_light1_position;
 
-
 glm::vec4 light0_position;
+glm::vec4 light1_position;
 
 //Variables para el movimiento
 GLfloat alfa=0.0, beta=0.0, theta=0.0, phi=0.0;
@@ -400,8 +399,6 @@ void graficarObjeto(Mesh* mesh){
     glm::mat3 m_3x3_inv_transp = glm::transpose(glm::inverse(glm::mat3(mesh->model_transform)));
     glm::mat4 v_inv = glm::inverse(view);
 
-
-
     glUseProgram(program);
 
     //Enviamos la matriz que debe ser usada para cada vertice
@@ -416,6 +413,7 @@ void graficarObjeto(Mesh* mesh){
     glUniform4fv(uniform_mat_specular,1,  glm::value_ptr(mesh->specular));
 
     glUniform4fv(uniform_light0_position,1, glm::value_ptr(light0_position));
+    glUniform4fv(uniform_light1_position,1, glm::value_ptr(light1_position));
 
     glUniform1f(uniform_mat_s, mesh->s);
 
@@ -480,7 +478,13 @@ void onIdle(){
 
     light_speed += (delta/animation_factor) * glm::radians(1.0f) * 5.0f;
 
-    light0_position = glm::vec4(0.0, 0.0, 0.0 + light_speed, 0.0);
+    light0_position = glm::translate(glm::mat4(1.0f), glm::vec3(-2.0, 0.0, 0.0)) *
+                      glm::rotate(glm::mat4(1.0f), light_speed, glm::vec3(1.0f, 0.0f, 0.0f)) *
+                      glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+    light1_position = glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f)) *
+                      glm::rotate(glm::mat4(1.0f), light_speed, glm::vec3(0.0f, 1.0f, 0.0f)) *
+                      glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
     glutPostRedisplay();
 }
